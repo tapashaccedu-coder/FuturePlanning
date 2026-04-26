@@ -1,0 +1,193 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply bg-slate-950 text-slate-100;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-slate-900;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-slate-700 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-500;
+  }
+}
+
+@layer components {
+  .nav-tab {
+    @apply relative px-5 py-3 text-sm font-medium text-slate-400 transition-all duration-200 
+           hover:text-slate-100 cursor-pointer select-none whitespace-nowrap;
+  }
+
+  .nav-tab.active {
+    @apply text-gold-400;
+  }
+
+  .nav-tab.active::after {
+    content: '';
+    @apply absolute bottom-0 left-0 right-0 h-0.5 bg-gold-400 rounded-full;
+  }
+
+  .card {
+    @apply bg-slate-900 border border-slate-800 rounded-xl p-6;
+  }
+
+  .card-sm {
+    @apply bg-slate-900 border border-slate-800 rounded-lg p-4;
+  }
+
+  .stat-card {
+    @apply bg-slate-900 border border-slate-800 rounded-xl p-5 flex flex-col gap-1;
+  }
+
+  .btn-primary {
+    @apply bg-gold-500 hover:bg-gold-400 text-slate-950 font-semibold px-4 py-2 rounded-lg 
+           text-sm transition-colors duration-150 cursor-pointer;
+  }
+
+  .btn-secondary {
+    @apply bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium px-4 py-2 rounded-lg 
+           text-sm transition-colors duration-150 cursor-pointer border border-slate-700;
+  }
+
+  .btn-ghost {
+    @apply text-slate-400 hover:text-slate-100 hover:bg-slate-800 px-3 py-2 rounded-lg 
+           text-sm transition-colors duration-150 cursor-pointer;
+  }
+
+  .input {
+    @apply bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100
+           placeholder-slate-500 focus:outline-none focus:border-gold-500 focus:ring-1 
+           focus:ring-gold-500/30 transition-colors w-full;
+  }
+
+  .label {
+    @apply text-xs font-medium text-slate-400 uppercase tracking-wider mb-1 block;
+  }
+
+  .section-title {
+    @apply font-display text-xl font-semibold text-slate-100;
+  }
+
+  .page-title {
+    @apply font-display text-2xl font-semibold text-slate-100;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-medium;
+  }
+
+  .badge-gold {
+    @apply badge bg-gold-500/20 text-gold-400;
+  }
+
+  .badge-green {
+    @apply badge bg-emerald-500/20 text-emerald-400;
+  }
+
+  .badge-red {
+    @apply badge bg-red-500/20 text-red-400;
+  }
+
+  .divider {
+    @apply border-t border-slate-800 my-4;
+  }
+}
+
+/* Subtle grid background on main content */
+.bg-grid {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Gold glow effect for key numbers */
+.glow-gold {
+  text-shadow: 0 0 20px rgba(232, 168, 0, 0.4);
+}
+
+/* Animated fade-in for page transitions */
+.page-enter {
+  animation: pageEnter 0.2s ease-out;
+}
+
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Zoom slider thumb — webkit */
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #e8a800;
+  border: 2px solid #0a1120;
+  cursor: pointer;
+  box-shadow: 0 0 0 0 rgba(232,168,0,0);
+  transition: box-shadow 0.15s;
+}
+input[type=range]::-webkit-slider-thumb:hover {
+  box-shadow: 0 0 0 4px rgba(232,168,0,0.2);
+}
+input[type=range]::-webkit-slider-runnable-track {
+  background: transparent;
+  height: 6px;
+}
+
+/* Zoom slider thumb — firefox */
+input[type=range]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #e8a800;
+  border: 2px solid #0a1120;
+  cursor: pointer;
+}
+input[type=range]::-moz-range-track {
+  background: transparent;
+  height: 6px;
+}
+input[type=range] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  outline: none;
+}
+
+/* Horizontal scrollbar for chart containers */
+.chart-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+.chart-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.chart-scroll::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 2px;
+}
