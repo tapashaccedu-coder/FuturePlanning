@@ -488,7 +488,15 @@ export default function WealthBuildChart({ overrideLedger = null, baseLedger = n
     },
     {
       label: 'Projected at Retirement',
-      value: stats.portfolioAtRetirement != null ? fmt(stats.portfolioAtRetirement) : '—',
+      value: (() => {
+        const nominal = stats.portfolioAtRetirement
+        if (nominal == null) return '—'
+        if (realMode) {
+          const inflMult = activeRetirementRow?.inflationMultiplier ?? 1
+          return fmt(Math.round(nominal / inflMult))
+        }
+        return fmt(nominal)
+      })(),
       sub: realMode ? "today's dollars (incl. emergency fund)" : 'nominal dollars (incl. emergency fund)',
       accent: true,
     },
