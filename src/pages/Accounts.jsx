@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useId } from 'react'
 import { useStore, ACTIONS, genId } from '../store'
+import NoteField from '../components/NoteField'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -327,6 +328,9 @@ function AccountCard({ account, index, total, onMoveUp, onMoveDown, onDelete }) 
               )}
             </div>
           )}
+
+          {/* Note */}
+          <NoteField noteKey={`account_${account.id}`} placeholder={`Notes about ${account.name || 'this account'}…`} />
         </div>
       )}
     </div>
@@ -395,6 +399,9 @@ function EmergencyFundSection() {
           <p className="mt-1 text-xs text-slate-600">Typical HYSA rate: 4–5%</p>
         </div>
       </div>
+
+      {/* Note */}
+      <NoteField noteKey="emergencyFund" placeholder="Notes about your emergency fund strategy or target…" />
     </div>
   )
 }

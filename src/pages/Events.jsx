@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react'
 import { useStore, ACTIONS, genId } from '../store'
+import NoteField from '../components/NoteField'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -290,6 +291,9 @@ function SSPersonCard({ personKey, label }) {
           )}
         </div>
       )}
+
+      {/* Note */}
+      <NoteField noteKey={`ss_${personKey}`} placeholder={`Notes about ${label}'s Social Security strategy or claiming decision…`} />
     </div>
   )
 }
@@ -487,6 +491,9 @@ function EventCard({ event, onDelete }) {
               )}
             </div>
           </div>
+
+          {/* Note */}
+          <NoteField noteKey={`event_${event.id}`} placeholder={`Notes about "${event.name || 'this event'}" — purpose, assumptions, source…`} />
         </div>
       )}
     </div>
