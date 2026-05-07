@@ -92,6 +92,12 @@ const DEFAULT_STATE = {
     spendingFactor:           0.75,       // survivor spends X% of couple's budget
   },
 
+  // Free-text notes for any section or item.
+  // Keys: 'person1' | 'person2' | 'spending' | 'emergencyFund'
+  //       'ss_person1' | 'ss_person2'
+  //       'account_<id>' | 'event_<id>'
+  notes: {},
+
   projectionOverrides: {
     stockReturn: 0.07,
     bondReturn: 0.035,
@@ -145,6 +151,9 @@ export const ACTIONS = {
 
   // Surviving Spouse Scenario
   UPDATE_SURVIVING_SPOUSE: 'UPDATE_SURVIVING_SPOUSE',
+
+  // Notes
+  UPDATE_NOTE: 'UPDATE_NOTE',
 
   // Projection Overrides
   UPDATE_PROJECTION_OVERRIDES: 'UPDATE_PROJECTION_OVERRIDES',
@@ -292,6 +301,14 @@ function reducer(state, action) {
       return {
         ...state,
         survivingSpouse: { ...state.survivingSpouse, ...action.payload },
+      }
+
+    // ── Notes ──
+    // payload: { key: string, text: string }
+    case ACTIONS.UPDATE_NOTE:
+      return {
+        ...state,
+        notes: { ...(state.notes ?? {}), [action.payload.key]: action.payload.text },
       }
 
     // ── Projection Overrides ──
