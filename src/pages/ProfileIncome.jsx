@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react'
 import { useStore, ACTIONS } from '../store'
+import NoteField from '../components/NoteField'
 
 // ─── Currency helpers ─────────────────────────────────────────────────────────
 
@@ -428,6 +429,9 @@ function PersonSection({ personKey, label, badge }) {
       {/* Bridge / Part-Time Income — collapsible */}
       <BridgeIncomeSection personKey={personKey} />
 
+      {/* Note */}
+      <NoteField noteKey={personKey} placeholder={`Notes about ${p.name || label}'s income, employment or assumptions…`} />
+
       {/* Summary pill */}
       {yearsLeft !== null && (
         <div className="bg-slate-800/50 border border-slate-700/50 rounded-lg px-4 py-3 flex flex-wrap items-center gap-x-1 gap-y-0.5 text-sm">
@@ -580,6 +584,9 @@ function SpendingSection() {
           )}
         </div>
       )}
+
+      {/* Note */}
+      <NoteField noteKey="spending" placeholder="Notes about spending assumptions, lifestyle plans, or budget rationale…" />
     </div>
   )
 }
