@@ -413,7 +413,7 @@ function EventCard({ event, onDelete }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="label">
-                Person 1's Age When This Occurs
+                {event.type === 'income_change' ? 'Start Age (P1)' : 'Person 1\'s Age When This Occurs'}
               </label>
               <input
                 className="input"
@@ -433,14 +433,16 @@ function EventCard({ event, onDelete }) {
             <div>
               <label className="label">
                 Amount
-                <span className="ml-1.5 normal-case font-normal text-slate-600">(today's dollars)</span>
+                <span className="ml-1.5 normal-case font-normal text-slate-600">
+                  {event.type === 'income_change' ? '(per year, today\'s dollars)' : '(today\'s dollars)'}
+                </span>
               </label>
               <div className="space-y-2">
                 {/* Sign toggle */}
                 <div className="flex gap-2">
                   {[
-                    { sign: 1, label: '+ Money In', cls: 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10' },
-                    { sign: -1, label: '− Money Out', cls: 'text-red-400 border-red-500/30 bg-red-500/10' },
+                    { sign: 1, label: event.type === 'income_change' ? '+ Extra Income' : '+ Money In', cls: 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10' },
+                    { sign: -1, label: event.type === 'income_change' ? '− Pay Cut' : '− Money Out', cls: 'text-red-400 border-red-500/30 bg-red-500/10' },
                   ].map(opt => {
                     const isActive = amountIsNegative ? opt.sign === -1 : opt.sign === 1
                     return (
@@ -451,7 +453,6 @@ function EventCard({ event, onDelete }) {
                           if (amountAbs !== '') {
                             update('amount', opt.sign * Math.abs(amountAbs))
                           }
-                          // Flip existing amount
                           if (typeof event.amount === 'number') {
                             update('amount', opt.sign * Math.abs(event.amount))
                           }
@@ -486,11 +487,47 @@ function EventCard({ event, onDelete }) {
                 <p className={`mt-1.5 text-xs font-medium ${
                   (typeof event.amount === 'number' ? event.amount : 0) >= 0 ? 'text-emerald-400' : 'text-red-400'
                 }`}>
-                  {formatCurrency(event.amount, { signed: true })} in today's dollars
+                  {formatCurrency(event.amount, { signed: true })} {event.type === 'income_change' ? 'per year' : 'in today\'s dollars'}
                 </p>
               )}
             </div>
           </div>
+
+          {/* End Age — only for income_change */}
+          {event.type === 'income_change' && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="label">
+                  End Age (P1)
+                  <span className="ml-1.5 normal-case font-normal text-slate-600">optional</span>
+                </label>
+                <input
+                  className="input"
+                  type="number"
+                  min="1"
+                  max="120"
+                  value={event.endAge ?? ''}
+                  onChange={e => update('endAge', e.target.value === '' ? null : parseInt(e.target.value))}
+                  placeholder="Leave blank = until retirement"
+                />
+                <p className="mt-1 text-xs text-slate-600">
+                  Leave blank to apply until retirement
+                </p>
+              </div>
+              <div className="flex items-end pb-1">
+                {event.person1Age !== '' && event.amount !== '' && event.amount !== null && (
+                  <div className="w-full bg-cyan-500/8 border border-cyan-500/20 rounded-lg px-3 py-2.5">
+                    <p className="text-xs text-cyan-400/80 font-medium">Recurring every year</p>
+                    <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
+                      {formatCurrency(event.amount, { signed: true })}/yr from age {event.person1Age}
+                      {event.endAge ? ` to age ${event.endAge}` : ' until retirement'}
+                      {', inflating with CPI'}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Note */}
           <NoteField noteKey={`event_${event.id}`} placeholder={`Notes about "${event.name || 'this event'}" — purpose, assumptions, source…`} />
@@ -559,7 +596,12 @@ function EventsSummaryTable({ events }) {
                     )}
                   </td>
                   <td className="py-3 px-2">
-                    <span className="text-slate-200">{evt.name || <em className="text-slate-600">Unnamed</em>}</span>
+                    <div className="text-slate-200 text-sm">{evt.name || <em className="text-slate-600">Unnamed</em>}</div>
+                    {evt.type === 'income_change' && evt.person1Age !== '' && (
+                      <div className="text-xs text-cyan-400/60 mt-0.5">
+                        age {evt.person1Age}{evt.endAge ? `–${evt.endAge}` : ' → retirement'}
+                      </div>
+                    )}
                   </td>
                   <td className="py-3 px-2">
                     <span className="flex items-center gap-1.5 text-xs">
@@ -572,6 +614,9 @@ function EventsSummaryTable({ events }) {
                     amt >= 0 ? 'text-emerald-400' : 'text-red-400'
                   }`}>
                     {amt !== null ? formatCurrency(amt, { signed: true }) : '—'}
+                    {evt.type === 'income_change' && amt !== null && (
+                      <div className="text-xs font-normal text-cyan-400/60">/yr</div>
+                    )}
                   </td>
                 </tr>
               )

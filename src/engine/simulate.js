@@ -205,13 +205,24 @@ export function simulate(state) {
   let debtBalance = 0
 
   // ── Future events index ───────────────────────────────────────────────────
+  // One-time events (large_expense, windfall): indexed by the exact age they occur.
+  // Income-change events: stored separately and applied every year in [startAge, endAge).
   const eventsByAge = {}
-  for (const evt of futureEvents) {
+  const incomeChangeEvents = []
+
+  for (const evt of (futureEvents ?? [])) {
     const age = num(evt.person1Age, 0)
     if (age < 1) continue
-    if (!eventsByAge[age]) eventsByAge[age] = []
-    eventsByAge[age].push(evt)
+    if (evt.type === 'income_change') {
+      incomeChangeEvents.push(evt)
+    } else {
+      if (!eventsByAge[age]) eventsByAge[age] = []
+      eventsByAge[age].push(evt)
+    }
   }
+
+  // Pre-compute retirement age for income_change endAge default
+  const p1RetirementAge = num(profile.person1.retirementAge, 65)
 
   // ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -352,12 +363,34 @@ export function simulate(state) {
     const baseSpending = livingSpending + healthSpending
 
     // 7. Future events (today's dollars × inflation)
+    //    One-time: large_expense / windfall — only in the exact year they occur.
+    //    Recurring: income_change — added every year from startAge until endAge
+    //               (or retirement if endAge not specified).
     const eventsThisYear = eventsByAge[p1Age] || []
-    const largeEventsNet = eventsThisYear.reduce(
+    const oneTimeNet = eventsThisYear.reduce(
       (sum, e) => sum + num(e.amount, 0) * inflMultiplier, 0
     )
-    const eventExpenses = Math.abs(Math.min(largeEventsNet, 0))
-    const eventIncome   = Math.max(largeEventsNet, 0)
+
+    // Sum all active income_change events for this age
+    const recurringIncome = incomeChangeEvents.reduce((sum, e) => {
+      const startAge = num(e.person1Age, 0)
+      // endAge: use event.endAge if set, otherwise stop at P1 retirement
+      const endAge = e.endAge && num(e.endAge, 0) > 0
+        ? num(e.endAge, 0)
+        : p1RetirementAge
+      if (p1Age < startAge || p1Age >= endAge) return sum
+      // Inflate from the year the event starts
+      const yearsActive = p1Age - startAge
+      return sum + num(e.amount, 0) * Math.pow(1 + inflationRate, startAge - p1CurrentAge + yearsActive)
+    }, 0)
+
+    const largeEventsNet  = oneTimeNet  // one-time net (can be + or −)
+    const eventExpenses   = Math.abs(Math.min(largeEventsNet, 0))
+    // Positive one-time windfalls + recurring income changes both flow as income
+    const eventIncome     = Math.max(largeEventsNet, 0) + Math.max(recurringIncome, 0)
+    // Negative income changes (pay cuts) reduce effective salary via spending gap,
+    // represented as an additional expense so drawdown/EF absorbs the shortfall
+    const recurringExpense = Math.abs(Math.min(recurringIncome, 0))
 
     // 8. Debt service
     const debtInterest = debtBalance * DEBT_RATE
@@ -407,6 +440,7 @@ export function simulate(state) {
     if (p1Retired) {
       const nonPortfolioIncome =
         effectiveTotalSalary + effectiveTotalSS + totalRmdThisYear + eventIncome
+        - recurringExpense
 
       // healthSpending already partially/fully covered by hsaWithdrawal
       const remainingHealthCost = healthSpending - hsaWithdrawal
@@ -485,7 +519,7 @@ export function simulate(state) {
     const totalCashIn  = effectiveTotalSalary + effectiveTotalSS + totalRmdThisYear + eventIncome
                          + portfolioDrawdown + hsaWithdrawal
     const totalCashOut = livingSpending + healthSpending
-                         + eventExpenses + accountContributions
+                         + eventExpenses + recurringExpense + accountContributions
                          + debtInterest + debtPrincipalRepayment
     let cashAfterDrawdown = totalCashIn - totalCashOut
 
@@ -590,6 +624,7 @@ export function simulate(state) {
       socialSecurityPerson2: Math.round(effectiveSS2),
       rmdIncome:             Math.round(totalRmdThisYear),
       eventIncome:           Math.round(eventIncome),
+      incomeChangeRecurring: Math.round(Math.max(recurringIncome, 0)),  // salary-change recurring income (positive only)
       totalIncome:           Math.round(effectiveTotalSalary + effectiveTotalSS + totalRmdThisYear + eventIncome),
 
       // Spending

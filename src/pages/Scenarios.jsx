@@ -773,7 +773,7 @@ function ProjectionTable({ ledger, accounts }) {
       getValue: r => r.p1Retired ? 'Retired' : 'Working', fmt: v => v, align: 'left',
       colorFn: () => '' },
     { key: 'salary',   label: 'Salary',    group: 'income',  defaultOn: true, monetary: true,
-      getValue: r => (r.person1Salary ?? 0) + (r.person2Salary ?? 0) + (r.bridgeIncomePerson1 ?? 0) + (r.bridgeIncomePerson2 ?? 0),
+      getValue: r => (r.person1Salary ?? 0) + (r.person2Salary ?? 0) + (r.bridgeIncomePerson1 ?? 0) + (r.bridgeIncomePerson2 ?? 0) + (r.incomeChangeRecurring ?? 0),
       fmt: fmtM, align: 'right', colorFn: () => 'text-slate-300' },
     { key: 'ss',       label: 'SS Income', group: 'income',  defaultOn: true, monetary: true,
       getValue: r => (r.socialSecurityPerson1 ?? 0) + (r.socialSecurityPerson2 ?? 0),

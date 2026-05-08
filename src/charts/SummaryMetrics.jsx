@@ -335,14 +335,6 @@ export default function SummaryMetrics() {
     }, 0)
   }, [state])
 
-  const totalGrowth = stats.portfolioAtRetirement != null
-    ? Math.max(0, stats.portfolioAtRetirement - totalContributed)
-    : null
-
-  const growthMultiple = totalContributed > 0 && totalGrowth != null
-    ? (stats.portfolioAtRetirement / totalContributed).toFixed(1)
-    : null
-
   // ── Retirement portfolio donut slices ───────────────────────────────────
   const retirementRow = ledger.find(r => r.p1Retired)
 
@@ -410,10 +402,24 @@ export default function SummaryMetrics() {
   const lifetimeTaxNominal = retiredRows.reduce((s, r) => s + (r.estimatedTax ?? 0), 0)
   const lifetimeTax = toRealAvg(lifetimeTaxNominal)
 
-  // ── Metric card definitions ─────────────────────────────────────────────
+  // ── Metric card values — all deflated when realMode is on ───────────────
   const portAtRet    = toReal(stats.portfolioAtRetirement)
-  const peakPort     = toReal(stats.peakPortfolio)
   const ssLifetime   = toRealAvg(stats.totalSSLifetime)
+
+  // ── Contributed vs Growth — compare in same dollar basis ────────────────
+  // totalContributed is already in today's dollars (today's balances + flat contribution amounts)
+  // portAtRet is already deflated to today's dollars when realMode is on
+  // So we compare them in the same basis: both real if realMode, both nominal if not.
+  const portAtRetNominal = stats.portfolioAtRetirement
+  const portAtRetForRatio = realMode ? portAtRet : portAtRetNominal
+
+  const growthMultiple = totalContributed > 0 && portAtRetForRatio != null
+    ? (portAtRetForRatio / totalContributed).toFixed(1)
+    : null
+
+  const totalGrowthReal = portAtRetForRatio != null
+    ? Math.max(0, portAtRetForRatio - totalContributed)
+    : null
 
   // ── Life expectancy gap ─────────────────────────────────────────────────
   const p1LifeExp = num(state.profile.person1?.lifeExpectancy, 90)
@@ -498,8 +504,8 @@ export default function SummaryMetrics() {
           label="Contributed vs Growth"
           value={growthMultiple ? `${growthMultiple}×` : '—'}
           sub={
-            totalGrowth != null && totalContributed > 0
-              ? `${fmtM(totalContributed)} in → ${fmtM(portAtRet ?? 0)} out`
+            totalGrowthReal != null && totalContributed > 0
+              ? `${fmtM(totalContributed)} in → ${fmtM(portAtRetForRatio ?? 0)} out · ${realMode ? "today's $" : 'nominal $'}`
               : 'Compound leverage ratio at retirement'
           }
           trend={growthMultiple >= 2 ? 'good' : growthMultiple >= 1.5 ? 'warn' : null}
