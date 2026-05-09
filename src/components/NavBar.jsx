@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { useStore, ACTIONS } from '../store'
 
 const TABS = [
@@ -18,6 +18,28 @@ export default function NavBar() {
   const [loadError,     setLoadError]     = useState('')
   const [loadSuccess,   setLoadSuccess]   = useState(false)
   const fileInputRef = useRef(null)
+
+  // ── PWA install prompt ───────────────────────────────────────────────────
+  const [installPrompt, setInstallPrompt] = useState(null)
+  const [installed,     setInstalled]     = useState(false)
+
+  useEffect(() => {
+    const handler = (e) => {
+      e.preventDefault()          // stop the browser's default mini-bar
+      setInstallPrompt(e)         // save it so we can trigger it ourselves
+    }
+    window.addEventListener('beforeinstallprompt', handler)
+    window.addEventListener('appinstalled', () => { setInstalled(true); setInstallPrompt(null) })
+    return () => window.removeEventListener('beforeinstallprompt', handler)
+  }, [])
+
+  const handleInstall = async () => {
+    if (!installPrompt) return
+    installPrompt.prompt()
+    const { outcome } = await installPrompt.userChoice
+    if (outcome === 'accepted') setInstalled(true)
+    setInstallPrompt(null)
+  }
 
   // ── Export: download full state as JSON ─────────────────────────────────
   const handleExport = () => {
@@ -103,8 +125,22 @@ export default function NavBar() {
             ))}
           </nav>
 
-          {/* Right side: Save/Load + auto-save indicator */}
+          {/* Right side: Install + Save/Load + auto-save indicator */}
           <div className="shrink-0 flex items-center gap-3">
+
+            {/* Install App button — only shown when browser offers it */}
+            {installPrompt && !installed && (
+              <button
+                onClick={handleInstall}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-violet-500/40 bg-violet-500/15 text-violet-300 text-xs font-medium hover:bg-violet-500/25 transition-all"
+                title="Install as an app on this device"
+              >
+                <svg viewBox="0 0 16 16" className="w-3.5 h-3.5 fill-current">
+                  <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zm.5 11.5V7h2l-2.5-3.5L5.5 7h2v4.5h1z"/>
+                </svg>
+                Install App
+              </button>
+            )}
 
             {/* Save/Load button + dropdown */}
             <div className="relative">
