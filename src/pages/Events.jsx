@@ -867,7 +867,7 @@ export default function Events() {
   const p2Included = profile.includePerson2
 
   return (
-    <div className="page-enter space-y-10 max-w-4xl">
+    <div className="page-enter space-y-10 max-w-4xl mx-auto">
 
       {/* ── SOCIAL SECURITY ─────────────────────────────────────── */}
       <section className="space-y-6">
