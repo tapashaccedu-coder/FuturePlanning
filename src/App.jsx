@@ -23,7 +23,7 @@ export default function App() {
     <WhatIfProvider>
       <div className="min-h-screen bg-slate-950 bg-grid">
         <NavBar />
-        <main className="w-full px-6 py-8">
+        <main className="w-full px-4 md:px-6 py-6 md:py-8 pb-24 md:pb-8">
           <ActivePage key={state._ui.activeTab} />
         </main>
       </div>
